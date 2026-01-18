@@ -1,0 +1,202 @@
+
+1. Explain how a linear inverse problem with Gaussian prior and Gaussian noise leads to a closed-form Gaussian posterior.
+
+* **Model setup**:
+  Linear forward model ( y = A x + \varepsilon ), where ( \varepsilon \sim \mathcal{N}(0, \Gamma_\varepsilon) ).
+
+* **Prior assumption**:
+  Unknown ( x \sim \mathcal{N}(m_0, \Gamma_0) ).
+
+* **Likelihood**:
+  Given (x), data (y) is Gaussian:
+  ( p(y \mid x) = \mathcal{N}(A x, \Gamma_\varepsilon) ).
+
+* **Bayes’ theorem**:
+  Posterior ( p(x \mid y) \propto p(y \mid x), p(x) ).
+
+* **Quadratic exponent**:
+  Both prior and likelihood have quadratic forms in (x); their product remains quadratic.
+
+* **Posterior distribution**:
+  The posterior is Gaussian: ( x \mid y \sim \mathcal{N}(m, \Gamma) ).
+
+* **Closed-form expressions**:
+  [
+  \Gamma = (A^\top \Gamma_\varepsilon^{-1} A + \Gamma_0^{-1})^{-1}, \quad
+  m = \Gamma (A^\top \Gamma_\varepsilon^{-1} y + \Gamma_0^{-1} m_0)
+  ]
+
+* **Key reason**:
+  Gaussian distributions are closed under linear transformations and multiplication.
+
+----------------------------------------------------------------------------------------------------
+2. Suggest a reasonable prior choice for coefficients of Gaussian RBFs used to parameterize a Dirichlet boundary condition.
+* **Zero-mean Gaussian prior**:
+  Choose coefficients ( c \sim \mathcal{N}(0, \Gamma_c) ) to encode no preferred boundary shape.
+
+* **Smoothness assumption**:
+  Use a covariance that penalizes rapid variation (e.g. squared-exponential or Matérn).
+
+* **Correlation between nearby RBFs**:
+  Set covariance entries to decay with distance between RBF centers along the boundary.
+
+* **Variance scaling**:
+  Choose variance to match the expected magnitude of the boundary values.
+
+* **Diagonal as simple default**:
+  If little prior knowledge is available, use independent coefficients:
+  ( \Gamma_c = \sigma^2 I ).
+
+* **Interpretation**:
+  Prior enforces smooth, moderate-amplitude Dirichlet boundary conditions without overfitting.
+
+----------------------------------------------------------------------------------------------------
+
+3. Help me structure a Bayesian inverse problem notebook so that the modeling assumptions, inference, and results are clearly separated.
+
+* **1. Problem statement & goals**
+
+  * Define the physical model, unknowns, and data
+  * State the inverse problem clearly
+
+* **2. Forward model**
+
+  * Mathematical formulation (operator (A), PDE, discretization)
+  * Numerical implementation details
+
+* **3. Observation model**
+
+  * Measurement process and noise assumptions
+  * Likelihood definition
+
+* **4. Prior model**
+
+  * Choice of prior distribution
+  * Motivation (smoothness, scale, boundary behavior)
+
+* **5. Bayesian formulation**
+
+  * Bayes’ theorem for the problem
+  * Posterior expression (analytical or formal)
+
+* **6. Inference method**
+
+  * Closed-form solution or algorithm (MAP, MCMC, variational)
+  * Computational details and parameters
+
+* **7. Results**
+
+  * Posterior mean, variance, samples
+  * Visualizations and numerical summaries
+
+* **8. Validation & sensitivity**
+
+  * Effect of prior and noise choices
+  * Diagnostics and consistency checks
+
+* **9. Conclusions**
+
+  * Main findings
+  * Limitations and possible extensions
+
+----------------------------------------------------------------------------------------------------
+
+4. Given a linear forward operator G and noisy data, confirm whether my posterior covariance formula is correct.
+
+* **Assumptions**:
+
+  * Linear model ( u = G \alpha + \varepsilon )
+  * Noise ( \varepsilon \sim \mathcal{N}(0, \Sigma_{\text{noise}}) )
+  * Prior ( \alpha \sim \mathcal{N}(0, \Sigma_{\text{prior}}) )
+
+* **Posterior covariance** ✅ **Correct**:
+  [
+  \Sigma_{\text{post}} = \left(G^\top \Sigma_{\text{noise}}^{-1} G + \Sigma_{\text{prior}}^{-1}\right)^{-1}
+  ]
+
+* **Posterior mean** ⚠️ **Conditionally correct**:
+  [
+  \mu_{\text{post}} = \Sigma_{\text{post}}, G^\top \Sigma_{\text{noise}}^{-1} u_{\text{meas}}
+  ]
+
+* **Sampling step** ✅ **Correct**:
+
+  * Drawing from ( \mathcal{N}(\mu_{\text{post}}, \Sigma_{\text{post}}) ) is appropriate.
+
+* **Summary**:
+
+  * Covariance: ✔ correct
+  * Mean: ✔ correct for zero-mean prior; otherwise missing a term
+
+----------------------------------------------------------------------------------------------------
+
+5. Suggest how to visualize posterior uncertainty for a reconstructed boundary function.
+* **Posterior mean curve**
+
+  * Plot the mean reconstructed boundary function as the main estimate.
+
+* **Credible bands**
+
+  * Add pointwise (95%) credible intervals (e.g. mean ± (2\sigma)) along the boundary.
+
+* **Posterior samples**
+
+  * Overlay several sampled boundary realizations (thin, semi-transparent lines).
+
+* **Uncertainty heatmap**
+
+  * Plot posterior standard deviation along the boundary parameter (arc length or angle).
+
+* **Comparison with prior**
+
+  * Show prior vs posterior uncertainty to highlight information gain.
+
+* **Error bars at control points**
+
+  * If using RBF coefficients, display marginal variances at RBF centers.
+
+----------------------------------------------------------------------------------------------------
+
+6. Advise on selecting the number and width of RBFs to balance flexibility and identifiability.
+
+* **Start coarse**
+
+  * Use a small number of RBFs to capture large-scale boundary features first.
+
+* **Match data resolution**
+
+  * Do not use more RBFs than the data can inform (avoid underdetermined coefficients).
+
+* **Width tied to spacing**
+
+  * Choose RBF width ( \sigma \approx 1!-!2 \times ) the distance between neighboring centers.
+
+* **Overlap is essential**
+
+  * Ensure neighboring RBFs overlap to avoid oscillatory reconstructions.
+
+* **Prior as regularizer**
+
+  * Stronger prior covariance allows more RBFs without instability.
+
+* **Check posterior variances**
+
+  * Large posterior variances indicate non-identifiable RBFs.
+
+* **Sensitivity study**
+
+  * Vary number and width; select the smallest set that gives stable reconstructions.
+
+----------------------------------------------------------------------------------------------------
+
+7. Suggest improvements to make a Bayesian inference codebase more readable and modular.
+----------------------------------------------------------------------------------------------------
+
+9. Help draft a concise one-page scientific writeup summarizing Bayesian modeling choices and results.
+----------------------------------------------------------------------------------------------------
+
+10. Review plotting choices for communicating uncertainty in inverse problems.
+
+----------------------------------------------------------------------------------------------------
+
+
